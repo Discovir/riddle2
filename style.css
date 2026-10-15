@@ -367,7 +367,7 @@ body {
 
 .transcript-viewport {
   position: relative;
-  min-height: 240px;
+  min-height: 160px;
   background: var(--bg-panel);
   border: 1px solid var(--border-subtle);
   padding: 1.25rem 1.15rem;
@@ -376,6 +376,8 @@ body {
   letter-spacing: 0.015em;
   margin-bottom: 1.25rem;
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Dialogue Lines Container */
@@ -464,20 +466,36 @@ body {
 }
 
 /* ==========================================================================
-   Verification Section (Post-Call Interface)
+   Verification Section (Directly within Terminal Viewport)
    ========================================================================== */
 
 .terminal-query-section {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-elevated);
+  border: 1px solid var(--border-active);
   padding: 1.15rem;
-  margin-bottom: 1rem;
-  animation: fadeInQuery 0.5s ease-out forwards;
+  margin-top: 1.35rem;
+  border-radius: var(--radius-subtle);
+  animation: revealPromptPulse 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: 0 0 16px rgba(184, 215, 181, 0.15);
 }
 
-@keyframes fadeInQuery {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes revealPromptPulse {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+    border-color: var(--text-highlight);
+    box-shadow: 0 0 25px rgba(224, 242, 216, 0.35);
+  }
+  60% {
+    border-color: var(--text-highlight);
+    box-shadow: 0 0 20px rgba(184, 215, 181, 0.28);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    border-color: var(--border-active);
+    box-shadow: 0 0 14px rgba(184, 215, 181, 0.12);
+  }
 }
 
 .query-separator {
@@ -678,7 +696,7 @@ body {
 
   .transcript-viewport {
     padding: 1rem 0.85rem;
-    min-height: 280px;
+    min-height: 140px;
   }
 
   .input-group {
@@ -706,7 +724,7 @@ body {
   }
 
   .transcript-viewport {
-    min-height: 300px;
+    min-height: 160px;
     padding: 1.5rem 1.5rem;
   }
 }

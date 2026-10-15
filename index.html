@@ -66,8 +66,8 @@
 
       <!-- Quick Control Bar -->
       <nav class="header-controls" aria-label="Terminal controls">
-        <button type="button" id="audioToggle" class="ctrl-btn" aria-pressed="false" title="Toggle restrained telemetry audio">
-          <span class="ctrl-bracket">[</span><span class="ctrl-label" id="audioLabel">AUDIO: OFF</span><span class="ctrl-bracket">]</span>
+        <button type="button" id="audioToggle" class="ctrl-btn" aria-pressed="true" title="Toggle restrained telemetry audio">
+          <span class="ctrl-bracket">[</span><span class="ctrl-label" id="audioLabel">AUDIO: ON</span><span class="ctrl-bracket">]</span>
         </button>
         <div class="ctrl-group">
           <button type="button" id="skipBtn" class="ctrl-btn" title="Skip typing directly to final transmission">
@@ -83,8 +83,8 @@
     <!-- Main Content Area: Intercept Transcript & Verification -->
     <main class="terminal-body" id="terminalBody" role="main">
       
-      <!-- Dialogue Container: Built line-by-line via JavaScript -->
-      <section class="transcript-viewport" aria-label="Intercepted audio transcription">
+      <!-- Dialogue & Terminal Workspace Container -->
+      <section class="transcript-viewport" aria-label="Intercepted audio transcription and verification">
         <div class="transcript-feed" id="transcriptFeed" aria-hidden="true">
           <!-- Lines rendered dynamically:
             Rust: 911. I need help.
@@ -97,44 +97,45 @@
         </div>
         <!-- Live character cursor during playback -->
         <span class="live-cursor" id="liveCursor" aria-hidden="true"></span>
-      </section>
 
-      <!-- Terminal Query / Answer Verification Section (revealed after disconnect) -->
-      <section class="terminal-query-section is-hidden" id="querySection" aria-label="Terminal verification">
-        <div class="query-separator" aria-hidden="true">
-          <span class="sep-line"></span>
-          <span class="sep-tag">EVIDENCE VERIFICATION PROTOCOL</span>
-          <span class="sep-line"></span>
+        <!-- Terminal Query / Answer Verification Section (revealed right below disconnect) -->
+        <div class="terminal-query-section is-hidden" id="querySection" aria-label="Terminal verification">
+          <div class="query-separator" aria-hidden="true">
+            <span class="sep-line"></span>
+            <span class="sep-tag">EVIDENCE VERIFICATION PROTOCOL</span>
+            <span class="sep-line"></span>
+          </div>
+
+          <form id="verifyForm" class="verify-form" autocomplete="off" novalidate>
+            <label for="locInput" class="input-label">
+              <span class="prompt-symbol" aria-hidden="true">&gt;</span>
+              <span class="prompt-text">LOCATION / SECTOR IDENTIFIER:</span>
+            </label>
+            <div class="input-group" id="inputGroup">
+              <span class="input-prefix" aria-hidden="true">&gt;</span>
+              <input 
+                type="text" 
+                id="locInput" 
+                name="locInput"
+                class="terminal-input"
+                maxlength="32" 
+                placeholder="ENTER DESIGNATION"
+                autocomplete="off" 
+                autocorrect="off" 
+                autocapitalize="characters" 
+                spellcheck="false"
+                required
+              >
+              <button type="submit" id="submitBtn" class="terminal-submit-btn">
+                SUBMIT
+              </button>
+            </div>
+          </form>
+
+          <!-- Response output zone -->
+          <div id="terminalOutput" class="terminal-output" role="region" aria-live="polite" aria-atomic="true"></div>
         </div>
 
-        <form id="verifyForm" class="verify-form" autocomplete="off" novalidate>
-          <label for="locInput" class="input-label">
-            <span class="prompt-symbol" aria-hidden="true">&gt;</span>
-            <span class="prompt-text">LOCATION / SECTOR IDENTIFIER:</span>
-          </label>
-          <div class="input-group">
-            <span class="input-prefix" aria-hidden="true">&gt;</span>
-            <input 
-              type="text" 
-              id="locInput" 
-              name="locInput"
-              class="terminal-input"
-              maxlength="32" 
-              placeholder="ENTER DESIGNATION"
-              autocomplete="off" 
-              autocorrect="off" 
-              autocapitalize="characters" 
-              spellcheck="false"
-              required
-            >
-            <button type="submit" id="submitBtn" class="terminal-submit-btn">
-              SUBMIT
-            </button>
-          </div>
-        </form>
-
-        <!-- Response output zone -->
-        <div id="terminalOutput" class="terminal-output" role="region" aria-live="polite" aria-atomic="true"></div>
       </section>
 
     </main>

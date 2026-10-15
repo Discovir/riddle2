@@ -117,7 +117,7 @@
     isPlaying: false,
     isPaused: false,
     isDisconnected: false,
-    audioEnabled: false,
+    audioEnabled: true, // Enabled by default
     currentTimeout: null,
     playStartTime: null,
     elapsedMs: 0,
@@ -148,9 +148,9 @@
       if (!AudioContextClass) return;
       audioCtx = new AudioContextClass();
 
-      // Master output
+      // Master output (active by default)
       masterGain = audioCtx.createGain();
-      masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      masterGain.gain.setValueAtTime(state.audioEnabled ? 1.0 : 0, audioCtx.currentTime);
       masterGain.connect(audioCtx.destination);
 
       // Low-level subtle analog carrier hum (60Hz + filtered harmonics)
@@ -202,6 +202,31 @@
 
     } catch (e) {
       console.warn('Web Audio initialization suppressed:', e);
+    }
+  }
+
+  function enableAudioAutoplay() {
+    initAudioContext();
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') {
+        const unlock = () => {
+          audioCtx.resume().then(() => {
+            if (masterGain && state.audioEnabled) {
+              masterGain.gain.setTargetAtTime(1.0, audioCtx.currentTime, 0.05);
+            }
+          });
+          window.removeEventListener('pointerdown', unlock);
+          window.removeEventListener('touchstart', unlock);
+          window.removeEventListener('keydown', unlock);
+          window.removeEventListener('click', unlock);
+        };
+        window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+        window.addEventListener('touchstart', unlock, { once: true, passive: true });
+        window.addEventListener('keydown', unlock, { once: true });
+        window.addEventListener('click', unlock, { once: true });
+      } else if (masterGain && state.audioEnabled) {
+        masterGain.gain.setTargetAtTime(1.0, audioCtx.currentTime, 0.05);
+      }
     }
   }
 
@@ -693,10 +718,11 @@
     DOM.replayBtn.classList.remove('is-hidden');
     DOM.querySection.classList.remove('is-hidden');
 
-    // Smoothly focus input for keyboard users on desktop, avoid aggressive scroll jump on mobile
-    if (window.innerWidth > 600) {
-      DOM.locInput.focus({ preventScroll: true });
-    }
+    // Smoothly autoscroll directly to the verification prompt so it is immediately noticed
+    setTimeout(() => {
+      DOM.querySection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      DOM.locInput.focus({ preventScroll: false });
+    }, 180);
   }
 
   /**
@@ -878,6 +904,10 @@
     // Reset terminal output on replay
     DOM.terminalOutput.innerHTML = '';
     DOM.locInput.value = '';
+    DOM.querySection.classList.add('is-hidden');
+
+    // Scroll back to top of terminal smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     playBlip(980, 0.04, 0.02);
     startPlayback();
@@ -963,6 +993,7 @@
     initWaveform();
     bindEvents();
     setupKeyboardShortcuts();
+    enableAudioAutoplay();
 
     // Check accessibility: prefers-reduced-motion
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

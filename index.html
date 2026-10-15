@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ARCHIVE 09-11 // INTERCEPT RECORDING</title>
+  <meta name="description" content="Recovered forensic audio transcript and signal telemetry. Surveillance archive playback.">
+  <meta name="theme-color" content="#080b09">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Minimal Phosphor Terminal Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23080b09'/><circle cx='8' cy='16' r='3' fill='%23b8d7b5'/><path d='M14 16h10' stroke='%23718b75' stroke-width='2' stroke-linecap='round'/></svg>">
+  
+  <!-- Preconnect to Google Fonts with robust web-safe fallbacks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient screen texture and CRT raster overlay (lightweight CSS) -->
+  <div class="screen-overlay" aria-hidden="true">
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="screen-glare"></div>
+  </div>
+
+  <!-- Screen reader accessible transcript (kept in sync without reading individual typed characters) -->
+  <div id="srTranscript" class="sr-only" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Main Terminal Wrapper -->
+  <div class="terminal-shell" id="terminalShell">
+    
+    <!-- Top Instrumentation & Metadata Header -->
+    <header class="terminal-header" role="banner">
+      <div class="header-band top-band">
+        <div class="sys-ident">
+          <span class="status-pip" id="statusPip" aria-hidden="true"></span>
+          <span class="sys-tag">REC // 911-RECONSTRUCTION</span>
+        </div>
+        <div class="telemetry-items">
+          <span class="telemetry-item" id="channelTag">CH-01 [A]</span>
+          <span class="telemetry-item time-counter" id="timeCounter" aria-label="Playback timestamp">00:00.00</span>
+        </div>
+      </div>
+
+      <!-- Waveform & Signal Analysis Monitor -->
+      <div class="signal-monitor-frame">
+        <div class="monitor-meta">
+          <button type="button" class="monitor-btn" id="waveModeBtn" title="Click to cycle signal inspection mode" aria-label="Signal inspection mode: Time Domain">
+            <span class="meta-label">SIGNAL:</span>
+            <span class="meta-value" id="waveModeLabel">TIME DOMAIN</span>
+          </button>
+          <div class="monitor-stats">
+            <span class="stat-item" id="sigQuality">FIDELITY: 98.4%</span>
+            <span class="stat-item status-text" id="signalStatus">RECONSTRUCTING</span>
+          </div>
+        </div>
+
+        <div class="canvas-container" id="canvasContainer" title="Tap to toggle signal visualization mode">
+          <canvas id="waveformCanvas" width="600" height="48" aria-label="Audio waveform visualization"></canvas>
+        </div>
+      </div>
+
+      <!-- Quick Control Bar -->
+      <nav class="header-controls" aria-label="Terminal controls">
+        <button type="button" id="audioToggle" class="ctrl-btn" aria-pressed="false" title="Toggle restrained telemetry audio">
+          <span class="ctrl-bracket">[</span><span class="ctrl-label" id="audioLabel">AUDIO: OFF</span><span class="ctrl-bracket">]</span>
+        </button>
+        <div class="ctrl-group">
+          <button type="button" id="skipBtn" class="ctrl-btn" title="Skip typing directly to final transmission">
+            <span class="ctrl-bracket">[</span><span class="ctrl-label">SKIP</span><span class="ctrl-bracket">]</span>
+          </button>
+          <button type="button" id="replayBtn" class="ctrl-btn is-hidden" title="Replay intercepted transmission">
+            <span class="ctrl-bracket">[</span><span class="ctrl-label">REPLAY</span><span class="ctrl-bracket">]</span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content Area: Intercept Transcript & Verification -->
+    <main class="terminal-body" id="terminalBody" role="main">
+      
+      <!-- Dialogue Container: Built line-by-line via JavaScript -->
+      <section class="transcript-viewport" aria-label="Intercepted audio transcription">
+        <div class="transcript-feed" id="transcriptFeed" aria-hidden="true">
+          <!-- Lines rendered dynamically:
+            Rust: 911. I need help.
+            911 Operator: This is 911. What's your location, Detective?
+            Rust: 7... 10... 3... 5... 9.
+            911 Operator: Could you repeat that?
+            Rust: You heard me.
+            [CALL DISCONNECTED]
+          -->
+        </div>
+        <!-- Live character cursor during playback -->
+        <span class="live-cursor" id="liveCursor" aria-hidden="true"></span>
+      </section>
+
+      <!-- Terminal Query / Answer Verification Section (revealed after disconnect) -->
+      <section class="terminal-query-section is-hidden" id="querySection" aria-label="Terminal verification">
+        <div class="query-separator" aria-hidden="true">
+          <span class="sep-line"></span>
+          <span class="sep-tag">EVIDENCE VERIFICATION PROTOCOL</span>
+          <span class="sep-line"></span>
+        </div>
+
+        <form id="verifyForm" class="verify-form" autocomplete="off" novalidate>
+          <label for="locInput" class="input-label">
+            <span class="prompt-symbol" aria-hidden="true">&gt;</span>
+            <span class="prompt-text">LOCATION / SECTOR IDENTIFIER:</span>
+          </label>
+          <div class="input-group">
+            <span class="input-prefix" aria-hidden="true">&gt;</span>
+            <input 
+              type="text" 
+              id="locInput" 
+              name="locInput"
+              class="terminal-input"
+              maxlength="32" 
+              placeholder="ENTER DESIGNATION"
+              autocomplete="off" 
+              autocorrect="off" 
+              autocapitalize="characters" 
+              spellcheck="false"
+              required
+            >
+            <button type="submit" id="submitBtn" class="terminal-submit-btn">
+              SUBMIT
+            </button>
+          </div>
+        </form>
+
+        <!-- Response output zone -->
+        <div id="terminalOutput" class="terminal-output" role="region" aria-live="polite" aria-atomic="true"></div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Forensic Metadata Footer -->
+    <footer class="terminal-footer" role="contentinfo">
+      <div class="footer-grid">
+        <span class="footer-meta">ARCHIVE ID: REC-1995-1103</span>
+        <span class="footer-meta" id="replayCounter">CYCLE: 01</span>
+        <span class="footer-meta">ENCRYPTION: NONE</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

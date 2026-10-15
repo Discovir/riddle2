@@ -1,0 +1,733 @@
+/* ==========================================================================
+   ARCHIVE 09-11 // INTERCEPT RECORDING TERMINAL
+   Sophisticated, Atmospheric Forensic Audio Interface
+   ========================================================================== */
+
+/* Design Tokens */
+:root {
+  /* Core Color Palette: Restrained Phosphor Instrumentation */
+  --bg-deep: #080b09;
+  --bg-panel: #0d130f;
+  --bg-panel-elevated: #131b15;
+  --border-subtle: #1c2820;
+  --border-focused: #3b5343;
+  --border-active: #53755e;
+
+  /* Typography Colors */
+  --text-primary: #b8d7b5;       /* Soft phosphor green */
+  --text-secondary: #718b75;     /* Muted sage */
+  --text-dim: #3e5243;           /* Deep desaturated green */
+  --text-highlight: #e0f2d8;     /* Pale signal highlight */
+  
+  /* Disconnect & Alert Accent */
+  --accent-disconnect: #c46868;  /* Muted, desaturated red */
+  --accent-disconnect-bg: rgba(196, 104, 104, 0.08);
+  --accent-disconnect-border: #6d3333;
+
+  /* Success Phosphor */
+  --accent-success: #a0e8a7;
+  --accent-success-glow: rgba(160, 232, 167, 0.15);
+
+  /* Typography Stacks */
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Monaco, 'Fira Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Fluid Spacing & Sizes */
+  --radius-subtle: 2px;
+  --glow-soft: 0 0 10px rgba(184, 215, 181, 0.12);
+  --glow-sharp: 0 0 4px rgba(224, 242, 216, 0.28);
+}
+
+/* Base Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Accessibility: Screen Reader Only Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Utility Hidden */
+.is-hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   Screen Texture & Atmospheric Overlays (Lightweight, Non-cheesy)
+   ========================================================================== */
+
+.screen-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* Ultra-faint CRT scanlines */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.18) 3px,
+    rgba(0, 0, 0, 0.18) 4px
+  );
+  opacity: 0.75;
+}
+
+/* Perimeter vignette simulating monitor depth */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 60%,
+    rgba(4, 7, 5, 0.65) 100%
+  );
+}
+
+/* Extremely faint glass reflection */
+.screen-glare {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(224, 242, 216, 0.015) 0%,
+    transparent 45%
+  );
+}
+
+/* ==========================================================================
+   Terminal Layout Shell
+   ========================================================================== */
+
+.terminal-shell {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1rem 1.5rem 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  position: relative;
+  z-index: 10;
+}
+
+/* ==========================================================================
+   Header Instrumentation & Signal Monitor
+   ========================================================================== */
+
+.terminal-header {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.header-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sys-ident {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--text-primary);
+  box-shadow: 0 0 6px var(--text-primary);
+  display: inline-block;
+  animation: pulse-pip 2.8s ease-in-out infinite;
+}
+
+.status-pip.is-disconnected {
+  background-color: var(--accent-disconnect);
+  box-shadow: 0 0 5px var(--accent-disconnect);
+  animation: none;
+}
+
+@keyframes pulse-pip {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.9); }
+}
+
+.sys-tag {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.telemetry-items {
+  display: inline-flex;
+  gap: 0.75rem;
+  color: var(--text-dim);
+  font-feature-settings: 'tnum';
+}
+
+.time-counter {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Waveform Canvas Area */
+.signal-monitor-frame {
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+}
+
+.monitor-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  color: var(--text-dim);
+}
+
+.monitor-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 2px 4px;
+  border-radius: var(--radius-subtle);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.monitor-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-panel-elevated);
+}
+
+.monitor-btn:focus-visible {
+  outline: 1px solid var(--text-primary);
+}
+
+.meta-label {
+  color: var(--text-dim);
+}
+
+.meta-value {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.monitor-stats {
+  display: inline-flex;
+  gap: 0.65rem;
+}
+
+.status-text {
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.status-text.is-cut {
+  color: var(--accent-disconnect);
+}
+
+.canvas-container {
+  width: 100%;
+  height: 48px;
+  cursor: pointer;
+  position: relative;
+}
+
+#waveformCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Header Quick Controls */
+.header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border-subtle);
+  font-size: 0.72rem;
+}
+
+.ctrl-group {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.ctrl-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ctrl-bracket {
+  color: var(--text-dim);
+}
+
+.ctrl-btn:hover, .ctrl-btn:focus-visible {
+  color: var(--text-highlight);
+  text-shadow: var(--glow-soft);
+  outline: none;
+}
+
+.ctrl-btn:focus-visible .ctrl-bracket {
+  color: var(--text-highlight);
+}
+
+.ctrl-btn[aria-pressed="true"] .ctrl-label {
+  color: var(--text-highlight);
+}
+
+/* ==========================================================================
+   Main Terminal Body & Dialogue Viewport
+   ========================================================================== */
+
+.terminal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.transcript-viewport {
+  position: relative;
+  min-height: 240px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  padding: 1.25rem 1.15rem;
+  font-size: clamp(0.92rem, 2.7vw, 1.05rem);
+  line-height: 1.7;
+  letter-spacing: 0.015em;
+  margin-bottom: 1.25rem;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Dialogue Lines Container */
+.transcript-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Individual Dialogue Line */
+.dialogue-line {
+  position: relative;
+  word-break: break-word;
+  white-space: pre-wrap;
+  transition: opacity 0.25s ease;
+}
+
+/* Speaker Identifiers */
+.speaker-tag {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: inline;
+}
+
+.speaker-rust {
+  color: var(--text-secondary);
+}
+
+.speaker-operator {
+  color: #8da491;
+}
+
+.speech-text {
+  color: var(--text-primary);
+}
+
+/* The Critical Number Sequence in Line 3 */
+.cipher-segment {
+  color: var(--text-highlight);
+  font-weight: 600;
+  text-shadow: var(--glow-soft);
+}
+
+/* Call Disconnected Banner */
+.disconnect-line {
+  margin-top: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--accent-disconnect-bg);
+  border: 1px solid var(--accent-disconnect-border);
+  color: var(--accent-disconnect);
+  font-size: clamp(0.82rem, 2.4vw, 0.92rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-block;
+  text-shadow: 0 0 6px rgba(196, 104, 104, 0.35);
+  animation: fadeInBanner 0.6s ease forwards;
+}
+
+@keyframes fadeInBanner {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Blinking Terminal Caret */
+.live-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.15em;
+  background-color: var(--text-primary);
+  vertical-align: -0.15em;
+  margin-left: 0.15em;
+  animation: blink-cursor 1s steps(2, start) infinite;
+  box-shadow: 0 0 6px var(--text-primary);
+}
+
+.live-cursor.is-idle {
+  animation: none;
+  opacity: 0;
+  display: none;
+}
+
+@keyframes blink-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* ==========================================================================
+   Verification Section (Post-Call Interface)
+   ========================================================================== */
+
+.terminal-query-section {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  padding: 1.15rem;
+  margin-bottom: 1rem;
+  animation: fadeInQuery 0.5s ease-out forwards;
+}
+
+@keyframes fadeInQuery {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.query-separator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+
+.sep-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.sep-tag {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.verify-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.input-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.prompt-symbol {
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.input-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-focused);
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--radius-subtle);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-group:focus-within {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 10px rgba(184, 215, 181, 0.14);
+}
+
+.input-prefix {
+  display: flex;
+  align-items: center;
+  padding-left: 0.45rem;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  user-select: none;
+}
+
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-highlight);
+  font-family: var(--font-mono);
+  font-size: clamp(0.9rem, 2.6vw, 1.05rem);
+  padding: 0.55rem 0.45rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  min-height: 44px;
+}
+
+.terminal-input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.7;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.terminal-input:focus {
+  outline: none;
+}
+
+.terminal-submit-btn {
+  background: var(--bg-panel-elevated);
+  border: 1px solid var(--border-focused);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  padding: 0 1rem;
+  min-height: 44px;
+  cursor: pointer;
+  border-radius: var(--radius-subtle);
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.terminal-submit-btn:hover {
+  background: var(--border-focused);
+  color: var(--text-highlight);
+  box-shadow: var(--glow-soft);
+}
+
+.terminal-submit-btn:focus-visible {
+  outline: 1px solid var(--text-primary);
+}
+
+/* Terminal Output Box */
+.terminal-output {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  min-height: 24px;
+}
+
+.output-block {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-deep);
+  animation: fadeInOutput 0.3s ease-out forwards;
+}
+
+@keyframes fadeInOutput {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.output-block.is-success {
+  border-color: var(--accent-success);
+  background: rgba(160, 232, 167, 0.04);
+  color: var(--accent-success);
+  box-shadow: 0 0 14px var(--accent-success-glow);
+}
+
+.output-block.is-neutral {
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.output-line {
+  margin-bottom: 0.25rem;
+}
+
+.output-line:last-child {
+  margin-bottom: 0;
+}
+
+.output-highlight {
+  color: var(--text-highlight);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Footer Metadata
+   ========================================================================== */
+
+.terminal-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.75rem;
+}
+
+.footer-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+/* ==========================================================================
+   Responsive Adaptations (Mobile First)
+   ========================================================================== */
+
+@media (max-width: 480px) {
+  .terminal-shell {
+    padding: 0.75rem 0.65rem 1.25rem 0.65rem;
+  }
+
+  .terminal-header {
+    padding: 0.75rem 0.75rem;
+  }
+
+  .transcript-viewport {
+    padding: 1rem 0.85rem;
+    min-height: 280px;
+  }
+
+  .input-group {
+    flex-direction: column;
+    padding: 0.35rem;
+  }
+
+  .terminal-submit-btn {
+    width: 100%;
+    margin-top: 0.25rem;
+    justify-content: center;
+  }
+
+  .footer-grid {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+}
+
+/* Medium & Desktop Screens */
+@media (min-width: 768px) {
+  .terminal-shell {
+    padding: 2rem 1.5rem 2.5rem 1.5rem;
+  }
+
+  .transcript-viewport {
+    min-height: 300px;
+    padding: 1.5rem 1.5rem;
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion Accessibility Support
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .status-pip {
+    animation: none !important;
+  }
+
+  .live-cursor {
+    animation: none !important;
+    opacity: 0.8;
+  }
+}
